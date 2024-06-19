@@ -14,7 +14,8 @@
 }
 
 body {
-  background-image: url("./assets/background.png");
+  background: url("./assets/background.png");
+  background-color: #5c62c1;
   background-size: cover;
   background-repeat: no-repeat;
   height:100%;

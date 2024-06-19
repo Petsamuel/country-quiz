@@ -5,6 +5,7 @@ import { useStore } from "../store/store";
 import { useMutateData } from "../hooks/useMutateData";
 import { generateRandomQuestions } from "../helper/questions";
 import { useState, useEffect } from "react";
+import { FaRegCircleCheck, FaRegCircle } from "react-icons/fa6";
 
 const Home = () => {
   const { failed, setData, countryData, setQuestionCount, QuestionCount } =
@@ -25,6 +26,7 @@ const Home = () => {
   const { data, mutate } = useMutateData("allcountries");
   const QuizUrl = import.meta.env.VITE_APP_QUIZ_URL;
   const [userChoice, setUserChoice] = useState("");
+  const [showAnswer, setShowAnswer] = useState<boolean>(false);
 
   useEffect(() => {
     mutate({
@@ -32,11 +34,12 @@ const Home = () => {
       payload: {},
     });
     setUserChoice("");
+    setShowAnswer(false);
 
     setData(generateRandomQuestions(data ? data.slice(0, 5) : []));
   }, [QuizUrl, data, mutate, setData]);
-  console.log(countryData?.[QuestionCount].answer);
-  console.log(userChoice)
+  // console.log(countryData?.[QuestionCount].answer);
+  // console.log(userChoice)
 
   return (
     <section className="text-white text-2xl flex flex-col justify-center items-center my-[8vh]  mx-8  lg:h-full">
@@ -64,29 +67,49 @@ const Home = () => {
                       // missed #EA8282
                       //correct #60BF88
                       <div
-                        className={`p-4 border-[#6066D0B2] text-[#6066D0CC] rounded-xl border-2 gap-y-2 hover:bg-[#F9A826] hover:border-0 cursor-pointer hover:text-white flex gap-4 items-center
-                           ${userChoice === val?"":""}`}
+                        className={`p-4 border-[#6066D0B2] text-[#6066D0CC] rounded-xl border-2 gap-y-2   cursor-pointer flex gap-2 items-center hover:bg-[#F9A826] hover:border-2 hover:border-[#F9A826] hover:text-white ${
+                          userChoice === val && !showAnswer
+                            ? "bg-[#F9A826] text-white border-[#f9a826]"
+                            : ""
+                        } 
+                            ${
+                              showAnswer &&
+                              val === countryData[QuestionCount].answer
+                                ? "bg-[#60BF88] border-[#60BF88] text-white border-2 hover:bg-[#60BF88] hover:border-[#60BF88]"
+                                : "hover:bg-transparent hover:border-2 hover:border-[#6066D0B2] hover:text-[#6066D0CC]"
+                            } 
+                            ${
+                              showAnswer &&
+                              userChoice === countryData[QuestionCount].answer
+                                ? "bg-[#60BF88] border-[#60BF88] text-white border-2 hover:bg-[#60BF88] hover:border-[#60BF88]"
+                                : "hover:bg-transparent hover:border-2 hover:border-[#6066D0B2] hover:text-[#6066D0CC]"
+                            } 
+                             ${
+                               showAnswer &&
+                               userChoice !==
+                                 countryData[QuestionCount].answer &&
+                               val === userChoice
+                                 ? "bg-[#EA8282] border-[#EA8282] text-white border-2 hover:bg-[#EA8282] hover:border-[#EA8282]"
+                                 : "hover:bg-transparent hover:border-2 hover:border-[#6066D0B2] hover:text-[#6066D0CC]"
+                             } `}
                         key={index}
                         onClick={() => {
                           setbuttonShow(true);
                           setQuestionCount;
-                          setUserChoice(val);
+                          setUserChoice(val ? val : "");
                         }}
                       >
-                        <div className="">
-                          {index === 0
-                            ? "A."
-                            : index === 1
-                            ? "B."
-                            : index === 2
-                            ? "C."
-                            : "D."}
-                        </div>
-                        <div className="text-pretty">
-                          {countryData && countryData.type === "flag" ? (
-                            <img src={val} alt={val} className="w-1/3" />
+                        <div className="text-pretty mx-2 flex gap-2">
+                          {countryData.type === "flag" ? (
+                            <img
+                              src={val ?? val}
+                              alt="Flag"
+                              className="h-8 w-12 inline-block mr-2"
+                            />
                           ) : (
-                            val
+                            <>
+                              {String.fromCharCode(65 + index)}. {val}
+                            </>
                           )}
                         </div>
                       </div>
@@ -96,10 +119,9 @@ const Home = () => {
                 {buttonShow && (
                   <div className="flex flex-end justify-end items-end">
                     <div
-                      className="bg-[#F9A826] rounded-xl p-4 w-fit text-lg cursor-pointer"
+                      className="bg-[#F9A826] rounded-xl px-4 py-3 w-fit text-lg cursor-pointer"
                       onClick={() => {
-                        setbuttonShow(!buttonShow);
-                        setUserChoice("");
+                        setShowAnswer(true);
                       }}
                     >
                       Next
