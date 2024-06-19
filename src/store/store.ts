@@ -8,8 +8,8 @@ export const useStore = create((set) => ({
   countryData: null,
 
   setHeadingText: (text: any) => set({ headingText: text }),
-  setQuestionCount: () =>
-    set((state: { QuestionCount: number; }) => ({ QuestionCount: state.QuestionCount + 1 })),
+  setQuestionCount: (text:number) =>
+    set((state: { QuestionCount: number; }) => ({ QuestionCount: text ? text : state.QuestionCount + 1  })),
   setLevelCount: () => set((state: { levelCount: number; }) => ({ levelCount: state.levelCount + 1 })),
   setFailed: () => set((state: { failed: boolean; }) => ({ failed: !state.failed })),
   setData: (data: any) => set({ countryData: data }),

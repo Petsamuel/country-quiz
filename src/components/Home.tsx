@@ -5,23 +5,31 @@ import { useStore } from "../store/store";
 import { useMutateData } from "../hooks/useMutateData";
 import { generateRandomQuestions } from "../helper/questions";
 import { useState, useEffect } from "react";
-import { FaRegCircleCheck, FaRegCircle } from "react-icons/fa6";
+// import { FaRegCircleCheck, FaRegCircle } from "react-icons/fa6";
 
 const Home = () => {
-  const { failed, setData, countryData, setQuestionCount, QuestionCount } =
-    useStore<{
-      failed: boolean;
-      setData: any;
-      QuestionCount: number;
-      countryData: any;
-      setQuestionCount: number;
-    }>((state: any) => ({
-      failed: state.failed,
-      setData: state.setData,
-      QuestionCount: state.QuestionCount,
-      countryData: state.countryData,
-      setQuestionCount: state.setQuestionCount,
-    }));
+  const {
+    failed,
+    setData,
+    countryData,
+    setQuestionCount,
+    QuestionCount,
+    setFailed,
+  } = useStore<{
+    failed: boolean;
+    setData: any;
+    QuestionCount: number;
+    countryData: any;
+    setQuestionCount: any;
+    setFailed: any;
+  }>((state: any) => ({
+    failed: state.failed,
+    setData: state.setData,
+    QuestionCount: state.QuestionCount,
+    countryData: state.countryData,
+    setQuestionCount: state.setQuestionCount,
+    setFailed: state.setFailed,
+  }));
   const [buttonShow, setbuttonShow] = useState<boolean>(false);
   const { data, mutate } = useMutateData("allcountries");
   const QuizUrl = import.meta.env.VITE_APP_QUIZ_URL;
@@ -39,7 +47,14 @@ const Home = () => {
     setData(generateRandomQuestions(data ? data.slice(0, 5) : []));
   }, [QuizUrl, data, mutate, setData]);
   // console.log(countryData?.[QuestionCount].answer);
-  // console.log(userChoice)
+  // console.log(showAnswer);
+
+  useEffect(() => {
+    userChoice !== countryData?.[QuestionCount]?.answer
+      ? setFailed()
+      : setQuestionCount();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showAnswer]);
 
   return (
     <section className="text-white text-2xl flex flex-col justify-center items-center my-[8vh]  mx-8  lg:h-full">
@@ -67,45 +82,59 @@ const Home = () => {
                       // missed #EA8282
                       //correct #60BF88
                       <div
-                        className={`p-4 border-[#6066D0B2] text-[#6066D0CC] rounded-xl border-2 gap-y-2   cursor-pointer flex gap-2 items-center hover:bg-[#F9A826] hover:border-2 hover:border-[#F9A826] hover:text-white ${
+                        className={`p-4 border-[#6066D0B2] text-[#6066D0CC] rounded-xl border-2 gap-y-2 cursor-pointer flex gap-2 items-center ${
                           userChoice === val && !showAnswer
                             ? "bg-[#F9A826] text-white border-[#f9a826]"
                             : ""
                         } 
                             ${
+                              userChoice !== val && !showAnswer
+                                ? "hover:bg-[#F9A826] hover:border-2 hover:border-[#F9A826] hover:text-white hover:cursor-pointer"
+                                : ""
+                            }
+                            ${
                               showAnswer &&
                               val === countryData[QuestionCount].answer
                                 ? "bg-[#60BF88] border-[#60BF88] text-white border-2 hover:bg-[#60BF88] hover:border-[#60BF88]"
-                                : "hover:bg-transparent hover:border-2 hover:border-[#6066D0B2] hover:text-[#6066D0CC]"
+                                : ""
                             } 
                             ${
                               showAnswer &&
-                              userChoice === countryData[QuestionCount].answer
-                                ? "bg-[#60BF88] border-[#60BF88] text-white border-2 hover:bg-[#60BF88] hover:border-[#60BF88]"
-                                : "hover:bg-transparent hover:border-2 hover:border-[#6066D0B2] hover:text-[#6066D0CC]"
+                              userChoice ===
+                                countryData[QuestionCount].answer &&
+                              val === userChoice
+                                ? "bg-[#60BF88] border-[#60BF88] text-white border-2 hover:bg-[#60BF88] hover:border-[#60BF88] hover:text-white"
+                                : "hover:cursor-not-allowed"
                             } 
                              ${
                                showAnswer &&
                                userChoice !==
                                  countryData[QuestionCount].answer &&
                                val === userChoice
-                                 ? "bg-[#EA8282] border-[#EA8282] text-white border-2 hover:bg-[#EA8282] hover:border-[#EA8282]"
-                                 : "hover:bg-transparent hover:border-2 hover:border-[#6066D0B2] hover:text-[#6066D0CC]"
-                             } `}
+                                 ? "bg-[#EA8282] border-[#EA8282] text-white border-2 hover:bg-[#EA8282] hover:border-[#EA8282] hover:text-white"
+                                 : "hover:cursor-not-allowed"
+                             } 
+                                 
+                                 
+                             `}
                         key={index}
                         onClick={() => {
-                          setbuttonShow(true);
-                          setQuestionCount;
-                          setUserChoice(val ? val : "");
+                          setUserChoice(`${showAnswer ? "" : val}`);
+                          userChoice !== ""
+                            ? setbuttonShow(true)
+                            : setbuttonShow(false);
                         }}
                       >
                         <div className="text-pretty mx-2 flex gap-2">
-                          {countryData.type === "flag" ? (
-                            <img
-                              src={val ?? val}
-                              alt="Flag"
-                              className="h-8 w-12 inline-block mr-2"
-                            />
+                          {countryData?.[QuestionCount].type === "flag" ? (
+                            <>
+                              {String.fromCharCode(65 + index)}. &nbsp; &nbsp;
+                              <img
+                                src={val}
+                                alt="Flag"
+                                className="h-8 w-12 inline-block mr-2"
+                              />
+                            </>
                           ) : (
                             <>
                               {String.fromCharCode(65 + index)}. {val}
@@ -121,7 +150,9 @@ const Home = () => {
                     <div
                       className="bg-[#F9A826] rounded-xl px-4 py-3 w-fit text-lg cursor-pointer"
                       onClick={() => {
-                        setShowAnswer(true);
+                        // ;
+
+                        userChoice !== "" ? setShowAnswer(true) : "";
                       }}
                     >
                       Next
@@ -138,7 +169,10 @@ const Home = () => {
               </p>
               <p className="text-lg font-normal text-[#1D355D] py-4">
                 you got{" "}
-                <span className="font-bold text-xl text-emerald-600"> --</span>{" "}
+                <span className="font-bold text-xl text-emerald-600">
+                  {" "}
+                  {QuestionCount}
+                </span>{" "}
                 correct answers{" "}
               </p>
 
@@ -146,8 +180,10 @@ const Home = () => {
                 <div
                   className=" rounded-xl p-2 px-12 flex  text-lg cursor-pointer border-[#1D355D] text-[#1D355D] border-2"
                   onClick={() => {
-                    setbuttonShow(!buttonShow);
-                    setQuestionCount;
+                    // setbuttonShow(showAnswer ? true : false);
+                    setQuestionCount(0);
+                    setUserChoice("");
+                    setFailed();
                   }}
                 >
                   Try again
